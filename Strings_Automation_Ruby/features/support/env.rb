@@ -1,0 +1,88 @@
+require 'rubygems'
+require 'capybara'
+require 'capybara/cucumber'
+require 'selenium-webdriver'
+#require 'chromedriver'
+
+Before do |scenario|
+	page.driver.browser.manage.window.maximize
+	sleep 20
+	module Capybara
+	end
+end
+
+
+Capybara.register_driver :selenium do |app_host|
+  $download_directory = "/home/ubuntu/Downloads"
+  profile = Selenium::WebDriver::Firefox::Profile.new
+  profile['browser.download.folderList'] = 2
+  profile['browser.download.dir'] = $download_directory
+  profile['browser.helperApps.neverAsk.saveToDisk'] = "text/csv" # content-type of file that will be downloaded
+  Capybara::Selenium::Driver.new(app_host, :browser => :firefox, profile: profile)
+end
+
+Capybara.register_driver :selenium_firefox do |app|
+  client = Selenium::WebDriver::Remote::Http::Default.new
+  client.timeout = 180 # <= Page Load Timeout value in seconds
+  Capybara::Selenium::Driver.new(app, :browser => :firefox, :http_client => client)
+end
+
+
+module Capybara
+  module Node
+    class Element
+      def hover
+        @session.driver.browser.action.move_to(self.native).perform
+      end
+    end
+  end
+end
+
+module SessionSteps
+	def signup(teamname,emailaddress,ownername,password)
+		visit "/"
+		click_button('Sign up')
+		find("input[placeholder = 'Team name']").set teamname
+                find("input[placeholder = 'Email']").set emailaddress
+		find("input[placeholder = 'Owner name']").set ownername
+		find("input[placeholder = 'Password']").set password
+		click_button "Sign up"
+	end
+end
+
+module SessionSteps
+	def login(team,email,password)
+		visit "/"           
+                #page.find('Log in').click
+                click_button('Log in')		
+		find("input[placeholder = 'Team name']").set team
+                find("input[placeholder = 'Email']").set email
+		find("input[placeholder = 'Password']").set password
+		click_button('Log in')
+	end
+end
+
+module Capybaradisable
+  def enable_fields(*fields)
+    fields.each do |field|
+      page.find_field(field).base.native.remove_attribute("disabled")
+    end
+  end
+end
+
+
+Capybara.configure do |config|
+  config.match = :prefer_exact
+  config.exact = true
+  config.exact_options = true
+end
+
+World(Capybara::Node)
+World(SessionSteps)
+World(Capybaradisable)
+
+Capybara.default_wait_time = 60 # seconds
+
+
+Capybara.default_driver = :selenium
+Capybara.app_host ="http://localhost:8000"

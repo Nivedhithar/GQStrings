@@ -1,0 +1,31 @@
+page.document.synchronize do
+  element.find("a.edit-link").click
+  textare
+html body div.container-fluid div#item-user.row div.col-md-12 div.panel.panel-default div.panel-heading div.btn-group div.btn-group button.btn.btn-default.btn-sm.dropdown-toggle
+
+Then /^(?:|I )should be on (.+)$/ do |page_name|
+  expected = path_to(page_name)
+  actual = URI.parse(current_url).path
+  wait_until { actual == expected }
+end
+
+
+Given(/^I click on Edit button to add workflows$/) do
+
+#page.should have_content("Edit")
+click _on " Edit "
+sleep 50
+end
+Given(/^I enter workflow name as "([^"]*)" and click on ok button$/) do |arg1|
+within(".dropdown-menu")do
+find("option[value='addWorkflows']").click
+page.driver.browser.switch_to.alert.text
+within(popup)
+fill_in "Enter valid name(s)", :with=>arg1
+click_on "ok"
+end
+end
+
+
+
+
